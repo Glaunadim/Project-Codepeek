@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CodePeek By Nadim</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --app:#0b0f1a;--panel:#0f1420;--surf:#141928;--bdr:#1e2740;
+  --acc:#6366f1;--accl:#818cf8;--muted:#4a5568;--dim:#64748b;--body:#cbd5e1;
+  --mono:'JetBrains Mono','Fira Code',monospace;
+  --sans:'Inter',-apple-system,sans-serif;
+}
+html,body{height:100%;background:var(--app);color:var(--body);font-family:var(--sans);overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh}
+
+/* ── Header ── */
+header{
+  height:50px;flex-shrink:0;background:var(--panel);
+  border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 14px;gap:10px;
+}
+.brand{display:flex;align-items:center;gap:8px}
+.brand-icon{
+  width:28px;height:28px;border-radius:8px;
+  background:linear-gradient(135deg,#6366f1,#7c3aed);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:#fff;font-weight:800;
+  box-shadow:0 2px 10px #6366f155;flex-shrink:0;
+}
+.brand-name{font-weight:800;font-size:14px;color:#fff;letter-spacing:-.02em}
+.brand-by{font-size:9px;color:var(--accl);font-weight:600;opacity:.7}
+.hdr-right{display:flex;gap:7px;align-items:center;flex-shrink:0}
+
+button{display:inline-flex;align-items:center;gap:5px;font-family:var(--sans);font-weight:600;cursor:pointer;border-radius:7px;transition:all .15s;border:none}
+.btn{font-size:11.5px;padding:6px 12px;background:var(--surf);color:var(--body);border:1px solid var(--bdr)}
+.btn:hover{background:var(--bdr)}
+.btn-p{font-size:11.5px;padding:6px 14px;background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;box-shadow:0 2px 10px #6366f144}
+.btn-p:hover{opacity:.9}
+.btn-p:disabled{opacity:.6;cursor:wait}
+
+/* ── Main ── */
+#main{flex:1;display:flex;overflow:hidden;gap:1px;background:var(--bdr)}
+
+/* ── Left panel ── */
+#left{width:42%;flex-shrink:0;display:flex;flex-direction:column;background:var(--panel)}
+.ed-top{
+  height:34px;flex-shrink:0;background:var(--surf);border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;justify-content:space-between;padding:0 10px;gap:8px;
+}
+/* Editable filename */
+.fname-wrap{display:flex;align-items:center;gap:5px;background:#1e274080;border:1px solid var(--bdr);border-radius:5px;padding:1px 8px}
+.fname-wrap span{font-size:11px;color:#94a3b8;font-family:var(--mono);opacity:.7}
+#fname-input{
+  background:transparent;border:none;outline:none;
+  font-size:11px;font-family:var(--mono);color:#e2e8f0;
+  width:100px;min-width:60px;
+}
+#fname-input:focus{color:#fff}
+.fstats{font-size:10px;color:var(--muted);font-family:var(--mono);flex-shrink:0}
+.ed-body{flex:1;display:flex;overflow:hidden}
+#lnums{
+  padding:14px 8px 14px 10px;background:#0d1117;color:#2d3748;
+  font-size:12px;line-height:1.65;text-align:right;user-select:none;
+  min-width:40px;overflow-y:hidden;border-right:1px solid var(--bdr);
+  font-family:var(--mono);flex-shrink:0;
+}
+#cinput{
+  flex:1;background:#0d1117;color:#c9d1d9;border:none;outline:none;resize:none;
+  font-size:12.5px;line-height:1.65;padding:14px 12px 14px 10px;
+  font-family:var(--mono);white-space:pre;overflow-x:auto;caret-color:#6366f1;tab-size:2;
+}
+
+/* ── Controls panel ── */
+#ctrl{background:var(--surf);border-top:1px solid var(--bdr);padding:11px 13px;flex-shrink:0}
+.ctrl-section{margin-bottom:10px}
+.ctrl-section:last-child{margin-bottom:0}
+.lbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.swatches{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.sw{width:22px;height:22px;border-radius:6px;cursor:pointer;border:2.5px solid transparent;padding:0;transition:all .15s;flex-shrink:0}
+.sw.on{border-color:#6366f1;outline:2px solid #6366f144;outline-offset:1px}
+.sw-none{background:#1a1a2a!important;border:2px dashed #444!important;display:flex!important;align-items:center;justify-content:center;font-size:9px;color:#555}
+.theme-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.tp{font-size:10.5px;padding:3px 9px;border-radius:20px;border:1px solid var(--bdr);background:var(--surf);color:var(--dim);cursor:pointer;font-family:var(--mono);transition:all .15s;font-weight:600}
+.tp.on{border-color:var(--acc);color:var(--accl);background:#6366f115}
+.slrow{display:flex;gap:12px;margin-top:0}
+.slg{flex:1}
+.slhdr{display:flex;justify-content:space-between;margin-bottom:5px}
+.sv{font-size:10px;color:var(--accl);font-family:var(--mono)}
+input[type=range]{width:100%;accent-color:#6366f1;height:3px;cursor:pointer}
+
+/* ── Right panel ── */
+#right{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--app);padding:16px 14px 32px;display:flex;flex-direction:column;gap:20px}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.sec-title{display:flex;align-items:center;gap:7px}
+.sec-title h3{font-size:13px;font-weight:700;color:#e2e8f0}
+.sec-badge{font-size:10px;color:var(--dim);background:var(--surf);padding:2px 8px;border-radius:20px;border:1px solid var(--bdr)}
+
+/* ── Code snippet window ── */
+#snip-wrap{display:inline-block;min-width:100%}
+.mac-win{background:#1e1e1e;border-radius:10px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.07)}
+.mac-bar{padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #3c3c3c;user-select:none}
+.tl{display:flex;gap:7px}
+.tl span{width:12px;height:12px;border-radius:50%;display:inline-block}
+.win-title{flex:1;text-align:center;font-size:12px;font-family:var(--mono)}
+#cdisp{padding:14px 0 18px;font-family:var(--mono);font-size:12.5px;line-height:1.65;overflow-x:auto}
+.cline{display:flex;padding:0 14px;min-height:1.65em}
+.cln{min-width:26px;text-align:right;margin-right:14px;user-select:none;flex-shrink:0;font-size:11.5px}
+.ccnt{white-space:pre;flex:1}
+
+/* ── Output customization controls ── */
+#out-ctrl{
+  background:var(--surf);border:1px solid var(--bdr);border-radius:9px;
+  padding:11px 13px;margin-bottom:10px;
+}
+#out-ctrl .ctrl-section{margin-bottom:8px}
+#out-ctrl .ctrl-section:last-child{margin-bottom:0}
+
+/* ── Browser window mockup ── */
+#browser-win{
+  border-radius:12px;overflow:hidden;
+  box-shadow:0 4px 24px rgba(0,0,0,.18);
+}
+/* Chrome bar — light macOS style by default */
+#browser-bar{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;
+  border-bottom:1px solid rgba(0,0,0,.1);
+  background:#e8e8e8; /* default, overridden by JS */
+}
+.b-dots{display:flex;gap:6px;flex-shrink:0}
+.b-dot{width:12px;height:12px;border-radius:50%}
+/* URL bar — wide, centered, white pill */
+#browser-url-wrap{
+  flex:1;display:flex;align-items:center;gap:6px;
+  background:#fff;border-radius:6px;
+  padding:4px 12px;
+  border:1px solid rgba(0,0,0,.12);
+  box-shadow:0 1px 3px rgba(0,0,0,.06);
+  min-width:0;
+}
+#browser-url-wrap span{font-size:11px;flex-shrink:0}
+#browser-url{
+  flex:1;background:transparent;border:none;outline:none;
+  font-size:12px;color:#333;font-family:var(--sans);
+  min-width:0;
+}
+/* Nav arrow placeholders */
+.b-nav{font-size:16px;color:#aaa;cursor:default;user-select:none;flex-shrink:0;line-height:1}
+/* Spacer to balance traffic lights */
+.b-spacer{flex-shrink:0;width:40px}
+/* Iframe area */
+#out-iframe-wrap{background:#fff}
+#out-iframe{width:100%;height:200px;border:none;display:block;background:#fff;transition:height .3s ease}
+
+/* ── Status bar ── */
+#sbar{
+  height:22px;flex-shrink:0;
+  background:linear-gradient(90deg,#6366f1,#7c3aed);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 14px;font-size:10px;color:rgba(255,255,255,.85);font-weight:500;
+}
+
+/* ── Toast ── */
+#toast{
+  position:fixed;bottom:50px;left:50%;transform:translateX(-50%);
+  background:#22c55e;color:#fff;padding:7px 18px;border-radius:20px;
+  font-size:12.5px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.3);
+  opacity:0;transition:opacity .2s;pointer-events:none;z-index:999;white-space:nowrap;
+}
+#toast.show{opacity:1}
+
+/* ── Mobile tab bar ── */
+#tabbar{display:none;background:var(--panel);border-top:1px solid var(--bdr);flex-shrink:0}
+#tabbar button{flex:1;padding:10px 0;background:transparent;color:var(--dim);border:none;border-radius:0;font-size:12px;flex-direction:column;gap:3px}
+#tabbar button.on{color:var(--accl)}
+.ti{font-size:15px;padding:2px 8px;border-radius:8px}
+
+@media(max-width:700px){
+  header{padding:0 10px}
+  .brand-by{display:none}
+  #left{width:100%}
+  #main{height:calc(100vh - 50px - 22px - 52px);position:relative}
+  .panel-page{position:absolute;inset:0;overflow-y:auto}
+  #tabbar{display:flex}
+  #out-iframe{height:150px}
+  .sec-hdr{flex-direction:column;align-items:flex-start}
+  .slrow{flex-direction:column;gap:8px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- Header -->
+<header>
+  <div class="brand">
+    <div class="brand-icon">CP</div>
+    <div>
+      <div class="brand-name">CodePeek</div>
+      <div class="brand-by">by Nadim</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <label style="cursor:pointer">
+      <div class="btn">📁 Upload</div>
+      <input type="file" accept=".html,.htm" id="fupload" style="display:none"/>
+    </label>
+    <button class="btn" id="copybtn">⎘ Copy</button>
+    <button class="btn" id="ctrlbtn" style="color:#818cf8">⚙ Controls</button>
+  </div>
+</header>
+
+<!-- Main -->
+<div id="main">
+
+  <!-- Left: Editor -->
+  <div id="left" class="panel-page">
+    <div class="ed-top">
+      <div class="fname-wrap">
+        <span>📄</span>
+        <input id="fname-input" value="index.html" spellcheck="false" title="Click to rename"/>
+      </div>
+      <span class="fstats" id="fstats">0 lines</span>
+    </div>
+    <div class="ed-body">
+      <div id="lnums"></div>
+      <textarea id="cinput" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+    </div>
+
+    <!-- Snippet + Output controls -->
+    <div id="ctrl">
+
+      <!-- VS Code Theme -->
+      <div class="ctrl-section">
+        <div class="lbl">VS Code Theme</div>
+        <div class="theme-pills" id="theme-pills"></div>
+      </div>
+
+      <!-- Snippet bg gradient -->
+      <div class="ctrl-section">
+        <div class="lbl">Snippet Background</div>
+        <div class="swatches" id="grad-sw"></div>
+      </div>
+
+      <!-- Snippet sliders -->
+      <div class="ctrl-section">
+        <div class="slrow">
+          <div class="slg">
+            <div class="slhdr"><span class="lbl">Padding</span><span class="sv" id="pval">40px</span></div>
+            <input type="range" id="pslider" min="0" max="80" value="40"/>
+          </div>
+          <div class="slg">
+            <div class="slhdr"><span class="lbl">Radius</span><span class="sv" id="rval">14px</span></div>
+            <input type="range" id="rslider" min="0" max="32" value="14"/>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Right: Previews -->
+  <div id="right" class="panel-page" style="display:none">
+
+    <!-- Code Snippet Preview -->
+    <div>
+      <div class="sec-hdr">
+        <div class="sec-title">
+          <h3>🗂️ Code Snippet</h3>
+          <span class="sec-badge">macOS · Syntax Highlighted</span>
+        </div>
+        <button class="btn-p" id="dl-snip">↓ Download PNG</button>
+      </div>
+      <div id="snip-wrap">
+        <div class="mac-win">
+          <div class="mac-bar" id="mac-bar">
+            <div class="tl">
+              <span style="background:#ff5f57;box-shadow:0 0 0 .5px #e0443e"></span>
+              <span style="background:#febc2e;box-shadow:0 0 0 .5px #dfa223"></span>
+              <span style="background:#28c840;box-shadow:0 0 0 .5px #1faa34"></span>
+            </div>
+            <div class="win-title" id="win-title-label">index.html</div>
+            <div style="width:54px"></div>
+          </div>
+          <div id="cdisp"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Output Preview -->
+    <div>
+      <div class="sec-hdr">
+        <div class="sec-title">
+          <h3>🖥️ Output Preview</h3>
+          <span class="sec-badge">Live Render</span>
+        </div>
+        <button class="btn-p" id="dl-out">↓ Download PNG</button>
+      </div>
+
+      <!-- Output customization -->
+      <div id="out-ctrl">
+        <div class="ctrl-section">
+          <div class="lbl" style="margin-bottom:6px">Window Chrome Color</div>
+          <div class="swatches" id="chrome-sw"></div>
+        </div>
+        <div class="ctrl-section">
+          <div class="slhdr"><span class="lbl">Corner Radius</span><span class="sv" id="brval">12px</span></div>
+          <input type="range" id="brslider" min="0" max="32" value="12"/>
+        </div>
+      </div>
+
+      <!-- Browser Window -->
+      <div id="browser-win">
+        <div id="browser-bar">
+          <div class="b-dots">
+            <div class="b-dot" style="background:#ff5f57"></div>
+            <div class="b-dot" style="background:#febc2e"></div>
+            <div class="b-dot" style="background:#28c840"></div>
+          </div>
+          <span class="b-nav">‹</span>
+          <span class="b-nav">›</span>
+          <div id="browser-url-wrap">
+            <span>🔒</span>
+            <input id="browser-url" value="index.html" spellcheck="false"/>
+          </div>
+          <div class="b-spacer"></div>
+        </div>
+        <div id="out-iframe-wrap">
+          <iframe id="out-iframe" sandbox="allow-scripts" title="Output Preview"></iframe>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Mobile tab bar -->
+<div id="tabbar">
+  <button id="te" class="on" onclick="switchTab('e')"><span class="ti">✏️</span><span>Editor</span></button>
+  <button id="tp" onclick="switchTab('p')"><span class="ti">🖥️</span><span>Preview</span></button>
+</div>
+
+<div id="sbar">
+  <span>CodePeek · by Nadim</span>
+  <span id="sinfo">Dark+ · Aurora · 0 lines</span>
+</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── Default HTML ─────────────────────────────────────────────────────────────
+const DEFAULT=`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Card</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      font-family:'Segoe UI',sans-serif;min-height:100vh;
+      display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,#667eea,#764ba2);
+    }
+    .card{background:#fff;border-radius:20px;padding:48px 56px;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,.25)}
+    .badge{display:inline-block;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:6px 18px;border-radius:100px;font-size:.78rem;margin-bottom:20px;font-weight:700}
+    h1{font-size:2rem;color:#1a1a1a;margin-bottom:10px}
+    p{color:#888;line-height:1.7;max-width:280px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">✨ PREVIEW</span>
+    <h1>Hello, World!</h1>
+    <p>Paste your HTML in the editor to see it live here.</p>
+  </div>
+</body>
+</html>`;
+
+// ─── VS Code Themes ───────────────────────────────────────────────────────────
+const THEMES={
+  "Dark+":   {bg:"#1e1e1e",bar:"#2d2d2d",bdr:"#3c3c3c",ln:"#3c3c3c", comment:"#6a9955",doctype:"#569cd6",tag:"#4ec9b0",attr:"#9cdcfe",val:"#ce9178",punct:"#808080",text:"#d4d4d4"},
+  "Monokai": {bg:"#272822",bar:"#3e3d32",bdr:"#555",   ln:"#555",    comment:"#88846f",doctype:"#66d9e8",tag:"#a6e22e",attr:"#a6e22e",val:"#e6db74",punct:"#f8f8f2",text:"#f8f8f2"},
+  "Dracula": {bg:"#282a36",bar:"#343746",bdr:"#44475a",ln:"#44475a",  comment:"#6272a4",doctype:"#8be9fd",tag:"#50fa7b",attr:"#8be9fd",val:"#f1fa8c",punct:"#ff79c6",text:"#f8f8f2"},
+  "One Dark":{bg:"#282c34",bar:"#353b45",bdr:"#4b5263",ln:"#4b5263",  comment:"#5c6370",doctype:"#61afef",tag:"#e06c75",attr:"#d19a66",val:"#98c379",punct:"#abb2bf",text:"#abb2bf"},
+  "Nord":    {bg:"#2e3440",bar:"#3b4252",bdr:"#434c5e",ln:"#434c5e",  comment:"#616e88",doctype:"#88c0d0",tag:"#81a1c1",attr:"#8fbcbb",val:"#a3be8c",punct:"#eceff4",text:"#d8dee9"},
+  "GitHub":  {bg:"#0d1117",bar:"#161b22",bdr:"#21262d",ln:"#30363d",  comment:"#8b949e",doctype:"#79c0ff",tag:"#7ee787",attr:"#79c0ff",val:"#a5d6ff",punct:"#ff7b72",text:"#c9d1d9"},
+  "Light+":  {bg:"#ffffff",bar:"#f3f3f3",bdr:"#e0e0e0",ln:"#b0b0b0",  comment:"#008000",doctype:"#0000ff",tag:"#800000",attr:"#ff0000",val:"#0000ff",punct:"#333",   text:"#000000"},
+};
+
+// ─── Snippet Gradients ────────────────────────────────────────────────────────
+const GRADS=[
+  {n:"Aurora",  c:"linear-gradient(135deg,#667eea,#764ba2)"},
+  {n:"Sunset",  c:"linear-gradient(135deg,#f093fb,#f5576c)"},
+  {n:"Ocean",   c:"linear-gradient(135deg,#4facfe,#00f2fe)"},
+  {n:"Forest",  c:"linear-gradient(135deg,#43e97b,#38f9d7)"},
+  {n:"Midnight",c:"linear-gradient(135deg,#0f0c29,#302b63)"},
+  {n:"Volcano", c:"linear-gradient(135deg,#f7971e,#ffd200)"},
+  {n:"Rose",    c:"linear-gradient(135deg,#ff9a9e,#fad0c4)"},
+  {n:"Abyss",   c:"linear-gradient(135deg,#1a1a2e,#0f3460)"},
+  {n:"Ember",   c:"linear-gradient(135deg,#fd746c,#ff9068)"},
+  {n:"Dark",    c:"linear-gradient(135deg,#1a1a1a,#2d2d2d)"},
+  {n:"None",    c:"transparent"},
+];
+
+// ─── Chrome (browser bar) Colors ──────────────────────────────────────────────
+const CHROMES=[
+  {n:"macOS Light", c:"#e8e8e8",  isDark:false},
+  {n:"macOS Dark",  c:"#2d2d2d",  isDark:true},
+  {n:"White",       c:"#f9fafb",  isDark:false},
+  {n:"Black",       c:"#111111",  isDark:true},
+  {n:"Blue",        c:"#1d4ed8",  isDark:true},
+  {n:"Indigo",      c:"#4338ca",  isDark:true},
+  {n:"Purple",      c:"#7e22ce",  isDark:true},
+  {n:"Pink",        c:"#be185d",  isDark:true},
+  {n:"Green",       c:"#15803d",  isDark:true},
+  {n:"Teal",        c:"#0f766e",  isDark:true},
+  {n:"Orange",      c:"#c2410c",  isDark:true},
+];
+
+// ─── Page Background Colors ───────────────────────────────────────────────────
+const OUT_BGS=[
+  {n:"White",   c:"#ffffff"},
+  {n:"Light",   c:"#f8f9fb"},
+  {n:"Cream",   c:"#fdf6e3"},
+  {n:"Blue",    c:"#eff6ff"},
+  {n:"Purple",  c:"#f5f3ff"},
+  {n:"Grey",    c:"#e5e7eb"},
+  {n:"Dark",    c:"#1a1a1a"},
+  {n:"Black",   c:"#000000"},
+];
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let curTheme="Dark+", curGrad=GRADS[0];
+let snipPad=40, snipRad=14;
+let curChrome=CHROMES[0], curOutBg=OUT_BGS[0];
+let borderR=12, prevH=420;
+
+// ─── DOM refs ─────────────────────────────────────────────────────────────────
+const cinput     = document.getElementById('cinput');
+const lnums      = document.getElementById('lnums');
+const cdisp      = document.getElementById('cdisp');
+const snipWrap   = document.getElementById('snip-wrap');
+const macBar     = document.getElementById('mac-bar');
+const winTitle   = document.getElementById('win-title-label');
+const browserWin = document.getElementById('browser-win');
+const browserBar = document.getElementById('browser-bar');
+const browserUrl = document.getElementById('browser-url');
+const outIWrap   = document.getElementById('out-iframe-wrap');
+const oiframe    = document.getElementById('out-iframe');
+const fstats     = document.getElementById('fstats');
+const sinfo      = document.getElementById('sinfo');
+const fnameInput = document.getElementById('fname-input');
+const toast      = document.getElementById('toast');
+
+// ─── Tokenizer ────────────────────────────────────────────────────────────────
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function tokenize(line){
+  const out=[]; let i=0;
+  const push=(t,v)=>out.push({t,v});
+  while(i<line.length){
+    if(line.startsWith('<!--',i)){const e=line.indexOf('-->',i+4),ei=e<0?line.length:e+3;push('comment',line.slice(i,ei));i=ei;continue}
+    if(line.startsWith('<!'  ,i)){const e=line.indexOf('>',i),ei=e<0?line.length:e+1;push('doctype',line.slice(i,ei));i=ei;continue}
+    if(line[i]==='<'){
+      i++;const cl=line[i]=='/';if(cl)i++;
+      push('punct',cl?'</':'<');
+      let ns=i;while(i<line.length&&/[a-zA-Z0-9\-:]/.test(line[i]))i++;
+      push('tag',line.slice(ns,i));
+      while(i<line.length&&line[i]!='>'&&!(line[i]==='/'&&line[i+1]==='>')){
+        if(/\s/.test(line[i])){let ws=i;while(i<line.length&&/\s/.test(line[i]))i++;push('text',line.slice(ws,i));}
+        else{
+          let as=i;
+          while(i<line.length&&line[i]!='='&&line[i]!='>'&&!/\s/.test(line[i])&&!(line[i]==='/'&&line[i+1]==='>'))i++;
+          push('attr',line.slice(as,i));
+          if(line[i]==='='){push('punct','=');i++;const q=line[i];if(q==='"'||q==="'"){let vs=i;i++;while(i<line.length&&line[i]!==q)i++;if(i<line.length)i++;push('val',line.slice(vs,i));}}
+        }
+      }
+      if(line[i]==='/')     {push('punct','/>');i+=2;}
+      else if(line[i]==='>'){push('punct','>');i++;}
+      continue;
+    }
+    let ts=i;while(i<line.length&&line[i]!='<')i++;if(i>ts)push('text',line.slice(ts,i));
+  }
+  return out;
+}
+
+// ─── Render code display ─────────────────────────────────────────────────────
+function renderCode(code){
+  const T=THEMES[curTheme];
+  const cm={comment:T.comment,doctype:T.doctype,tag:T.tag,attr:T.attr,val:T.val,punct:T.punct,text:T.text};
+  const lines=code.split('\n');
+  let html='';
+  lines.forEach((line,i)=>{
+    const toks=tokenize(line);
+    const cnt=toks.length
+      ? toks.map(t=>`<span style="color:${cm[t.t]||T.text}">${esc(t.v)}</span>`).join('')
+      : '<span style="opacity:0">​</span>';
+    html+=`<div class="cline"><span class="cln" style="color:${T.ln}">${i+1}</span><span class="ccnt">${cnt}</span></div>`;
+  });
+  cdisp.style.background=T.bg;
+  cdisp.innerHTML=html;
+  macBar.style.background=T.bar;
+  macBar.style.borderBottomColor=T.bdr;
+  snipWrap.querySelector('.mac-win').style.background=T.bg;
+  winTitle.style.color='#7a7a7a';
+  // line nums
+  let lh='';for(let i=1;i<=lines.length;i++)lh+=`<div style="color:${i%5===0?'#3d4f6e':'#1e2d45'}">${i}</div>`;
+  lnums.innerHTML=lh;
+  fstats.textContent=`${lines.length} lines · ${code.length} chars`;
+  updateStatus(lines.length);
+}
+
+// ─── postMessage height listener ──────────────────────────────────────────────
+window.addEventListener('message',e=>{
+  if(e.data&&e.data.type==='codepeek-height'){
+    const h=Math.max(e.data.height,60);
+    oiframe.style.height=(h+32)+'px';
+    prevH=h+32;
+  }
+});
+
+function updatePreview(code){
+  // Inject a tiny script that reports body height via postMessage
+  const heightScript=`<script>
+    function reportH(){
+      var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);
+      window.parent.postMessage({type:'codepeek-height',height:h},'*');
+    }
+    if(document.readyState==='complete'){setTimeout(reportH,100);}
+    else{window.addEventListener('load',function(){setTimeout(reportH,100);});}
+    // also report after images/fonts load
+    setTimeout(reportH,600);
+  <\/script>`;
+  const injected=code.replace(/<\/body>/i, heightScript+'</body>');
+  oiframe.srcdoc='';
+  requestAnimationFrame(()=>{ oiframe.srcdoc=injected; });
+}
+
+// ─── Apply styles ─────────────────────────────────────────────────────────────
+function applySnip(){
+  snipWrap.style.background=curGrad.c;
+  snipWrap.style.padding=snipPad+'px';
+  snipWrap.style.borderRadius=snipRad+'px';
+}
+
+function applyOutput(){
+  browserWin.style.borderRadius=borderR+'px';
+  browserBar.style.background=curChrome.c;
+  browserBar.style.borderBottomColor=curChrome.isDark?'rgba(255,255,255,.08)':'rgba(0,0,0,.1)';
+  const urlWrap=document.getElementById('browser-url-wrap');
+  urlWrap.style.background=curChrome.isDark?'rgba(255,255,255,.15)':'#fff';
+  urlWrap.style.borderColor=curChrome.isDark?'rgba(255,255,255,.1)':'rgba(0,0,0,.12)';
+  browserUrl.style.color=curChrome.isDark?'rgba(255,255,255,.85)':'#333';
+  document.querySelector('#browser-url-wrap span').style.color=curChrome.isDark?'rgba(255,255,255,.7)':'#555';
+  document.querySelectorAll('.b-nav').forEach(n=>n.style.color=curChrome.isDark?'rgba(255,255,255,.4)':'#aaa');
+}
+
+function updateStatus(lines){
+  sinfo.textContent=`${curTheme} · ${curGrad.n} · ${lines} lines`;
+}
+
+// ─── Sync filename ────────────────────────────────────────────────────────────
+function syncFilename(){
+  const name=fnameInput.value||'index.html';
+  winTitle.textContent=name;
+  browserUrl.value=name;
+}
+fnameInput.addEventListener('input',syncFilename);
+
+// ─── Build controls ───────────────────────────────────────────────────────────
+function buildThemePills(){
+  const c=document.getElementById('theme-pills');
+  Object.keys(THEMES).forEach(k=>{
+    const b=document.createElement('button');
+    b.className='tp'+(k===curTheme?' on':'');
+    b.textContent=k;
+    b.onclick=()=>{
+      curTheme=k;
+      document.querySelectorAll('.tp').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+      renderCode(cinput.value);
+    };
+    c.appendChild(b);
+  });
+}
+
+function buildSwatches(id, items, setter, apply){
+  const c=document.getElementById(id);
+  items.forEach((item,i)=>{
+    const b=document.createElement('button');
+    b.className='sw'+(i===0?' on':'');
+    if(item.c==='transparent'){
+      b.classList.add('sw-none');
+      b.innerHTML='∅';
+    } else {
+      b.style.background=item.grad||item.c;
+    }
+    b.title=item.n;
+    b.onclick=()=>{
+      c.querySelectorAll('.sw').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+      setter(item);
+      apply();
+    };
+    c.appendChild(b);
+  });
+}
+
+// ─── Sliders ─────────────────────────────────────────────────────────────────
+document.getElementById('pslider').oninput=e=>{snipPad=+e.target.value;document.getElementById('pval').textContent=snipPad+'px';applySnip()};
+document.getElementById('rslider').oninput=e=>{snipRad=+e.target.value;document.getElementById('rval').textContent=snipRad+'px';applySnip()};
+document.getElementById('brslider').oninput=e=>{borderR=+e.target.value;document.getElementById('brval').textContent=borderR+'px';applyOutput()};
+
+// ─── Input ────────────────────────────────────────────────────────────────────
+cinput.addEventListener('scroll',()=>lnums.scrollTop=cinput.scrollTop);
+cinput.addEventListener('keydown',e=>{
+  if(e.key!=='Tab')return;
+  e.preventDefault();
+  const s=e.target.selectionStart,en=e.target.selectionEnd;
+  cinput.value=cinput.value.slice(0,s)+'  '+cinput.value.slice(en);
+  cinput.selectionStart=cinput.selectionEnd=s+2;
+  onChange();
+});
+cinput.addEventListener('input',onChange);
+
+function onChange(){
+  const c=cinput.value;
+  renderCode(c);
+  updatePreview(c);
+}
+
+// ─── Upload ───────────────────────────────────────────────────────────────────
+document.getElementById('fupload').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    cinput.value=ev.target.result;
+    // auto-set filename
+    fnameInput.value=f.name;
+    syncFilename();
+    onChange();
+  };
+  r.readAsText(f);e.target.value='';
+};
+
+// ─── Copy ─────────────────────────────────────────────────────────────────────
+document.getElementById('copybtn').onclick=()=>{
+  navigator.clipboard.writeText(cinput.value).then(()=>showToast('✓ Copied!'));
+};
+
+// ─── Toggle controls ─────────────────────────────────────────────────────────
+let ctrlOn=true;
+document.getElementById('ctrlbtn').onclick=()=>{
+  ctrlOn=!ctrlOn;
+  document.getElementById('ctrl').style.display=ctrlOn?'':'none';
+  document.getElementById('out-ctrl').style.display=ctrlOn?'':'none';
+};
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function showToast(msg){
+  toast.textContent=msg;toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'),2200);
+}
+
+// ─── Load script helper ───────────────────────────────────────────────────────
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    if(document.querySelector(`script[src="${src}"]`)){res();return}
+    const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;
+    document.head.appendChild(s);
+  });
+}
+
+// ─── Download Snippet PNG (captures the macOS code window) ───────────────────
+document.getElementById('dl-snip').onclick=async function(){
+  const btn=this; btn.textContent='⏳ Processing…'; btn.disabled=true;
+  try{
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    const cv=await html2canvas(snipWrap,{scale:2.5,useCORS:true,allowTaint:true,backgroundColor:null,logging:false});
+    const a=document.createElement('a');
+    a.download=(fnameInput.value||'snippet').replace(/\.html?$/,'')+'-code.png';
+    a.href=cv.toDataURL('image/png');a.click();
+    showToast('✓ Code snippet downloaded!');
+  }catch(e){showToast('Error: '+e.message)}
+  btn.textContent='↓ Download PNG'; btn.disabled=false;
+};
+
+// ─── Download Output PNG ──────────────────────────────────────────────────────
+document.getElementById('dl-out').onclick=async function(){
+  const btn=this; btn.textContent='⏳ Rendering…'; btn.disabled=true;
+  try{
+    const code=cinput.value;
+    const W=Math.min(browserWin.offsetWidth||800,1200);
+    const rad=borderR;
+    const urlVal=browserUrl.value||'index.html';
+    const chromeBg=curChrome.c;
+    const isDark=curChrome.isDark;
+
+    // ── Step 1: measure ACTUAL content height (no trailing blank space) ────────
+    const BREATHE=20;
+    const measurer=document.createElement('iframe');
+    measurer.style.cssText=`position:fixed;left:-${W+200}px;top:0;width:${W}px;height:3000px;border:none;visibility:hidden;`;
+    document.body.appendChild(measurer);
+    measurer.contentDocument.open();
+    measurer.contentDocument.write(code);
+    measurer.contentDocument.close();
+    await new Promise(r=>setTimeout(r,700));
+
+    // Walk all rendered elements to find the lowest bottom edge
+    let maxBottom=0;
+    try{
+      measurer.contentDocument.body.querySelectorAll('*').forEach(el=>{
+        const r=el.getBoundingClientRect();
+        if(r.bottom>maxBottom) maxBottom=r.bottom;
+      });
+      const br=measurer.contentDocument.body.getBoundingClientRect();
+      if(br.bottom>maxBottom) maxBottom=br.bottom;
+    }catch(e){}
+
+    // Use real content bottom + breathing space; fallback to scrollHeight
+    const finalContentH=maxBottom>10
+      ? Math.ceil(maxBottom)+BREATHE
+      : Math.max(measurer.contentDocument.body.scrollHeight,60);
+
+    document.body.removeChild(measurer);
+
+    btn.textContent='⏳ Capturing…';
+
+    // ── Step 2: render content into hidden iframe and capture ─────────────────
+    const tempIf=document.createElement('iframe');
+    tempIf.style.cssText=`position:fixed;left:-${W+200}px;top:0;width:${W}px;height:${finalContentH}px;border:none;visibility:hidden;`;
+    document.body.appendChild(tempIf);
+    tempIf.contentDocument.open();
+    tempIf.contentDocument.write(code);
+    tempIf.contentDocument.close();
+    await new Promise(r=>setTimeout(r,700));
+
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+
+    const pageImg=await html2canvas(tempIf.contentDocument.documentElement,{
+      scale:3,
+      useCORS:true,
+      allowTaint:true,
+      backgroundColor:'#ffffff',
+      width:W,
+      height:finalContentH,
+      windowWidth:W,
+      windowHeight:finalContentH,
+      logging:false,
+    });
+
+    document.body.removeChild(tempIf);
+
+    // ── Step 3: build final canvas with browser chrome ────────────────────────
+    const barH=44, scale=3;
+    const totalH=finalContentH+barH;
+    const fc=document.createElement('canvas');
+    fc.width=W*scale;
+    fc.height=totalH*scale;
+    const ctx=fc.getContext('2d');
+    ctx.scale(scale,scale);
+
+    const rr=(x,y,w,h,r)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);};
+
+    // Shadow
+    ctx.save();
+    ctx.shadowColor='rgba(0,0,0,0.28)';ctx.shadowBlur=16;ctx.shadowOffsetY=4;
+    rr(0,0,W,totalH,rad);ctx.fillStyle=chromeBg;ctx.fill();
+    ctx.restore();
+
+    // Chrome bg
+    rr(0,0,W,totalH,rad);ctx.fillStyle=chromeBg;ctx.fill();
+
+    // Page — bottom corners rounded
+    ctx.save();
+    rr(0,barH,W,finalContentH,[0,0,rad,rad]);ctx.clip();
+    ctx.fillStyle='#ffffff';ctx.fillRect(0,barH,W,finalContentH);
+    ctx.drawImage(pageImg,0,barH,W,finalContentH);
+    ctx.restore();
+
+    // Separator
+    ctx.fillStyle=isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.10)';
+    ctx.fillRect(0,barH-1,W,1);
+
+    // Traffic lights
+    const dotR=7,dotY=barH/2,gapX=18;
+    [{c:'#ff5f57',s:'#e0443e'},{c:'#febc2e',s:'#dfa223'},{c:'#28c840',s:'#1faa34'}].forEach((d,i)=>{
+      ctx.beginPath();ctx.arc(gapX+i*26,dotY,dotR,0,Math.PI*2);
+      ctx.fillStyle=d.c;ctx.fill();
+      ctx.strokeStyle=d.s+'88';ctx.lineWidth=0.5;ctx.stroke();
+    });
+
+    // Nav arrows
+    ctx.fillStyle=isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.3)';
+    ctx.font=`bold 15px Arial`;
+    ctx.fillText('‹',gapX+82,dotY+6);
+    ctx.fillText('›',gapX+98,dotY+6);
+
+    // URL pill
+    const px=gapX+118,pw=W-px-gapX,ph=26,py=dotY-13;
+    ctx.fillStyle=isDark?'rgba(255,255,255,0.15)':'#ffffff';
+    ctx.beginPath();ctx.roundRect(px,py,pw,ph,6);ctx.fill();
+    ctx.strokeStyle=isDark?'rgba(255,255,255,0.12)':'rgba(0,0,0,0.15)';
+    ctx.lineWidth=0.75;ctx.stroke();
+    ctx.font=`13px Inter,system-ui,sans-serif`;
+    ctx.fillStyle=isDark?'rgba(255,255,255,0.85)':'#333';
+    ctx.fillText('🔒  '+urlVal,px+10,dotY+5);
+
+    const a=document.createElement('a');
+    a.download=(fnameInput.value||'output').replace(/\.html?$/,'')+'-preview.png';
+    a.href=fc.toDataURL('image/png',1.0);
+    a.click();
+    showToast('✓ Downloaded!');
+  }catch(e){
+    console.error(e);showToast('Error: '+e.message);
+  }
+  btn.textContent='↓ Download PNG';btn.disabled=false;
+};
+
+// ─── Mobile tabs ──────────────────────────────────────────────────────────────
+function switchTab(t){
+  const l=document.getElementById('left'),r=document.getElementById('right');
+  const te=document.getElementById('te'),tp=document.getElementById('tp');
+  if(t==='e'){l.style.display='';r.style.display='none';te.classList.add('on');tp.classList.remove('on');}
+  else{l.style.display='none';r.style.display='';tp.classList.add('on');te.classList.remove('on');}
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+buildThemePills();
+buildSwatches('grad-sw',   GRADS,    v=>curGrad=v,    applySnip);
+buildSwatches('chrome-sw', CHROMES,  v=>curChrome=v,  applyOutput);
+
+applySnip();
+applyOutput();
+cinput.value=DEFAULT;
+onChange();
+
+if(window.innerWidth<=700) switchTab('e');
+else{document.getElementById('right').style.display='';document.getElementById('left').style.display='';}
+</script>
+</body>
+</html>
